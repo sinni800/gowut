@@ -1,15 +1,15 @@
 // Copyright (C) 2013 Andras Belicza. All rights reserved.
-//
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -22,7 +22,7 @@ package gwu
 // Multiple windows can be created, but only one is visible
 // at a time in the browser. The Window interface is the
 // equivalent of the browser page.
-//
+// 
 // Default style class: "gwu-Window"
 type Window interface {
 	// Window is a Panel, child components can be added to it.
@@ -43,7 +43,7 @@ type Window interface {
 	// in the HTML head section.
 	AddHeadHtml(html string)
 
-	// SetFocusedCompId sets the id of the currently focused component.
+	// SetFocusedCompId sets the id of the currently focused component. 
 	SetFocusedCompId(id ID)
 
 	// Theme returns the CSS theme of the window.
@@ -147,12 +147,9 @@ func (c *windowImpl) Render(w writer) {
 }
 
 func (win *windowImpl) RenderWin(w writer, s Server) {
-	// We could optimize (store byte slices of static strings) this
+	// We could optimize this (store byte slices of static strings)
 	// but windows are rendered "so rarely"...
-	w.Writes("<!DOCTYPE html>")
-	w.Writes("<html ")
-	win.renderAttrsAndStyle(w)
-	w.Writes("><head><meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\"><title>")
+	w.Writes("<!doctype html><html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\"><title>")
 	w.Writees(win.text)
 	w.Writess("</title><link href=\"", s.AppPath(), _PATH_STATIC)
 	if len(win.theme) == 0 {
@@ -164,11 +161,9 @@ func (win *windowImpl) RenderWin(w writer, s Server) {
 	win.renderDynJs(w, s)
 	w.Writess("<script src=\"", s.AppPath(), _PATH_STATIC, _RES_NAME_STATIC_JS, "\"></script>")
 	w.Writess(win.heads...)
-	w.Writes("</head><body ")
-	win.renderAttrsAndStyle(w)
-	w.Writes(">")
+	w.Writes("</head><body>")
 
-	win.Render(w) // This is panelImpl.Render()
+	win.Render(w)
 
 	w.Writes("</body></html>")
 }
