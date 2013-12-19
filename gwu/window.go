@@ -1,15 +1,15 @@
 // Copyright (C) 2013 Andras Belicza. All rights reserved.
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -22,7 +22,7 @@ package gwu
 // Multiple windows can be created, but only one is visible
 // at a time in the browser. The Window interface is the
 // equivalent of the browser page.
-// 
+//
 // Default style class: "gwu-Window"
 type Window interface {
 	// Window is a Panel, child components can be added to it.
@@ -43,7 +43,7 @@ type Window interface {
 	// in the HTML head section.
 	AddHeadHtml(html string)
 
-	// SetFocusedCompId sets the id of the currently focused component. 
+	// SetFocusedCompId sets the id of the currently focused component.
 	SetFocusedCompId(id ID)
 
 	// Theme returns the CSS theme of the window.
@@ -54,7 +54,7 @@ type Window interface {
 	// If an empty string is set, the server's theme will be used.
 	SetTheme(theme string)
 
-	// Render renders the window as a complete HTML document.
+	// RenderWin renders the window as a complete HTML document.
 	RenderWin(w writer, s Server)
 }
 
@@ -117,10 +117,42 @@ func (s *windowImpl) SetTheme(theme string) {
 	s.theme = theme
 }
 
+func (c *windowImpl) Render(w writer) {
+	// Attaching window events is outside of the HTML tag denoted by the window's id.
+	// This means if the window is re-rendered (not reloaded), changed window event handlers
+	// will not be reflected.
+	// This also avoids the effect of registering the event sender functions multiple times.
+
+	// First render window event handlers as window functions.
+	found := false
+	for etype, _ := range c.handlers {
+		if etype.Category() != ECAT_WINDOW {
+			continue
+		}
+
+		if !found {
+			found = true
+			w.Writes("<script>")
+		}
+		// To render       : add<etypeFunc>(function(){se(null,etype,id);});
+		// Example (onload): addonload(function(){se(null,13,4327);});
+		w.Writevs("add", etypeFuncs[etype], "(function(){se(null,", int(etype), ",", int(c.id), ");});")
+	}
+	if found {
+		w.Writes("</script>")
+	}
+
+	// And now call panelImpl's Render()
+	c.panelImpl.Render(w)
+}
+
 func (win *windowImpl) RenderWin(w writer, s Server) {
 	// We could optimize (store byte slices of static strings) this
 	// but windows are rendered "so rarely"...
-	w.Writes("<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\"><title>")
+	w.Writes("<!DOCTYPE html>")
+	w.Writes("<html ")
+	win.renderAttrsAndStyle(w)
+	w.Writes("><head><meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\"><title>")
 	w.Writees(win.text)
 	w.Writess("</title><link href=\"", s.AppPath(), _PATH_STATIC)
 	if len(win.theme) == 0 {
@@ -132,14 +164,16 @@ func (win *windowImpl) RenderWin(w writer, s Server) {
 	win.renderDynJs(w, s)
 	w.Writess("<script src=\"", s.AppPath(), _PATH_STATIC, _RES_NAME_STATIC_JS, "\"></script>")
 	w.Writess(win.heads...)
-	w.Writes("</head><body>")
+	w.Writes("</head><body ")
+	win.renderAttrsAndStyle(w)
+	w.Writes(">")
 
 	win.Render(w) // This is panelImpl.Render()
 
 	w.Writes("</body></html>")
 }
 
-// renderDynJs renders the dynamic JavaScript codes of GWU.
+// renderDynJs renders the dynamic JavaScript codes of Gowut.
 func (win *windowImpl) renderDynJs(w writer, s Server) {
 	w.Writes("<script>")
 	w.Writess("var _pathApp='", s.AppPath(), "';")
