@@ -32,4 +32,11 @@ Open the page http://localhost:3434/guitest/ in your browser to see it.
 Godoc of Gowut¶
 -------
 
-You can read the godoc of Gowut online here: http://godoc.org/code.google.com/p/gowut/gwu 
+You can read the godoc of Gowut online here: http://godoc.org/github.com/sinni800/gowut
+
+
+The fork
+-------
+
+I forked this project because I wanted to add some stuff to it and share these additions. 
+Pull requests and issues are welcome, of course!
