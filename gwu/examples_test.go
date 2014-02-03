@@ -16,7 +16,7 @@
 package gwu_test
 
 import (
-	"github.com/sinni800/gowut"
+	"github.com/sinni800/gowut/gwu"
 )
 
 // Example code determining which button was clicked. 
