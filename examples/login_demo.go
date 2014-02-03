@@ -18,7 +18,7 @@
 package main
 
 import (
-	"code.google.com/p/gowut/gwu"
+	"github.com/sinni800/gowut"
 	"fmt"
 	"log"
 	"math/rand"
