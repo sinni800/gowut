@@ -32,7 +32,7 @@ func ExampleButton() {
 // Example code determining what kind of key is involved. 
 func ExampleTextBox() {
 	b := gwu.NewTextBox("")
-	tb.AddSyncOnETypes(gwu.ETYPE_KEY_UP) // This is here so we will see up-to-date value in the event handler
+	b.AddSyncOnETypes(gwu.ETYPE_KEY_UP) // This is here so we will see up-to-date value in the event handler
 	b.AddEHandlerFunc(func(e gwu.Event) {
 		if e.ModKey(gwu.MOD_KEY_SHIFT) {
 			// SHIFT is pressed
@@ -43,7 +43,7 @@ func ExampleTextBox() {
 		case c == gwu.KEY_ENTER: // Enter
 		case c >= gwu.KEY_0 && c <= gwu.KEY_9:
 			fallthrough
-		case c >= gwu.KEY_NUMPAD_0 && c <= gwuKEY_NUMPAD_9: // Number
+		case c >= gwu.KEY_NUMPAD_0 && c <= gwu.KEY_NUMPAD_9: // Number
 		case c >= gwu.KEY_A && c <= gwu.KEY_Z: // Letter
 		case c >= gwu.KEY_F1 && c <= gwu.KEY_F12: // Function key
 		}
