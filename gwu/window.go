@@ -151,7 +151,7 @@ func (c *windowImpl) Render(w writer) {
 	}
 
 	w.Writes(`<style>`)
-	win.cssrules.render(w)
+	c.cssrules.render(w)
 	w.Writes(`</style>`)
 
 	// And now call panelImpl's Render()
