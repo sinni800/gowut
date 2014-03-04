@@ -54,6 +54,9 @@ type Window interface {
 	// If an empty string is set, the server's theme will be used.
 	SetTheme(theme string)
 
+	// AddCSSrule adds a root css rule
+	AddCSSRule(r CSSRule)
+
 	// RenderWin renders the window as a complete HTML document.
 	RenderWin(w writer, s Server)
 }
@@ -79,6 +82,7 @@ type windowImpl struct {
 	panelImpl   // Panel implementation
 	hasTextImpl // Has text implementation
 
+	cssrules      *cssRuleCollectionImpl
 	name          string   // Window name
 	heads         []string // Additional head HTML texts
 	focusedCompId ID       // Id of the last reported focused component
@@ -88,9 +92,13 @@ type windowImpl struct {
 // NewWindow creates a new window.
 // The default layout strategy is LAYOUT_VERTICAL.
 func NewWindow(name, text string) Window {
-	c := &windowImpl{panelImpl: newPanelImpl(), hasTextImpl: newHasTextImpl(text), name: name}
+	c := &windowImpl{panelImpl: newPanelImpl(), hasTextImpl: newHasTextImpl(text), name: name, cssrules: &cssRuleCollectionImpl{}}
 	c.Style().AddClass("gwu-Window")
 	return c
+}
+
+func (w *windowImpl) AddCSSRule(r CSSRule) {
+	w.cssrules.AddRule(r)
 }
 
 func (w *windowImpl) Name() string {
@@ -142,6 +150,10 @@ func (c *windowImpl) Render(w writer) {
 		w.Writes("</script>")
 	}
 
+	w.Writes(`<style>`)
+	win.cssrules.render(w)
+	w.Writes(`</style>`)
+
 	// And now call panelImpl's Render()
 	c.panelImpl.Render(w)
 }
@@ -161,6 +173,9 @@ func (win *windowImpl) RenderWin(w writer, s Server) {
 		w.Writes(resNameStaticCss(win.theme))
 	}
 	w.Writes("\" rel=\"stylesheet\" type=\"text/css\">")
+	w.Writes(`<style>`)
+	win.cssrules.render(w)
+	w.Writes(`</style>`)
 	win.renderDynJs(w, s)
 	w.Writess("<script src=\"", s.AppPath(), _PATH_STATIC, _RES_NAME_STATIC_JS, "\"></script>")
 	w.Writess(win.heads...)

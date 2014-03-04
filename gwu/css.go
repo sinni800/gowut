@@ -1,15 +1,15 @@
 // Copyright (C) 2013 Andras Belicza. All rights reserved.
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -17,10 +17,67 @@
 
 package gwu
 
+type CSSRule interface {
+	Selector() string
+
+	SetSelector(selector string)
+
+	Style() Style
+
+	render(w writer)
+}
+
+type cssRuleImpl struct {
+	style    *styleImpl
+	selector string
+}
+
+func NewCSSRule() CSSRule {
+	return &cssRuleImpl{style: newStyleImpl()}
+}
+
+func (css *cssRuleImpl) Selector() string {
+	return css.selector
+}
+
+func (css *cssRuleImpl) SetSelector(s string) {
+	css.selector = s
+}
+
+func (css *cssRuleImpl) Style() Style {
+	return css.style
+}
+
+func (css *cssRuleImpl) render(w writer) {
+	w.Writes(css.selector)
+	w.Write(_STR_CB_OP)
+	css.Style().renderAttrs(w)
+	w.Write(_STR_CB_CL)
+}
+
+type CSSRuleCollection interface {
+	AddRule(r CSSRule)
+	render(w writer)
+}
+
+type cssRuleCollectionImpl struct {
+	rules []cssRuleImpl
+}
+
+func (coll *cssRuleCollectionImpl) AddRule(r CSSRule) {
+	coll.rules = append(coll.rules, cssRuleImpl{style: r.Style().(*styleImpl), selector: r.Selector()})
+}
+
+func (css *cssRuleCollectionImpl) render(w writer) {
+	for _, rule := range css.rules {
+		rule.render(w)
+	}
+}
+
 // Built-in CSS themes.
 const (
 	THEME_DEFAULT = "default" // Default CSS theme
-	THEME_DEBUG   = "debug"   // Debug CSS theme, useful for developing/debugging purposes. 
+	THEME_DEBUG   = "debug"   // Debug CSS theme, useful for developing/debugging purposes.
 )
 
 // resNameStaticCss returns the CSS resource name
